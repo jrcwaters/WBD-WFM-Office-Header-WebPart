@@ -1,0 +1,44 @@
+// =============================================================================
+//  Office Hero — design tokens
+// -----------------------------------------------------------------------------
+//  GOLD-USAGE RULE — read this before you touch $gold.
+//
+//  $gold (#FFD024) is the single "needs your attention" accent. It is permitted
+//  in EXACTLY THREE places and nowhere else:
+//      1. the facilities-notice label,
+//      2. the facilities-notice CTA button,
+//      3. the keyboard focus outline (accessibility — see the focus mixin).
+//
+//  It must NOT be used for icons, borders, quick-link tiles, hover states, or
+//  anything decorative. When the facilities notice is hidden, no gold appears
+//  anywhere in the web part (the focus outline only shows on :focus-visible).
+//  If you find yourself reaching for $gold for a fourth thing, stop.
+// =============================================================================
+
+// --- The attention accent ----------------------------------------------------
+$gold:             #FFD024;
+$gold-ink:         #2C2C2A;   // charcoal text sitting on the gold button
+
+// --- Charcoal / scrim --------------------------------------------------------
+$hero-fallback:    #4A4A47;   // flat fill shown when no photo is configured
+
+// --- Text on the scrim -------------------------------------------------------
+$text-strong:      #F1EFE8;   // office name (h1), notice title, tile labels
+$text-meta:        #D3D1C7;   // meta line
+$text-muted:       #B4B2A9;   // eyebrow, section labels, notice detail, tile icons
+
+// --- Translucent cards on the scrim ------------------------------------------
+$card-fill:        rgba(241, 239, 232, 0.12);
+$card-border:      rgba(241, 239, 232, 0.22);
+
+// --- Contacts banner (solid white) -------------------------------------------
+$contacts-bg:      #ffffff;
+$contacts-divider: #E4E2DA;
+$role-heading:     #5F5E5A;   // role heading + job title
+$contact-name:     #2C2C2A;
+$avatar-fill:      #F1EFE8;   // placeholder-avatar background
+$avatar-glyph:     #5F5E5A;   // placeholder person glyph
+
+// --- Geometry ----------------------------------------------------------------
+$radius:           8px;       // every rounded element uses this — no exceptions
+$content-max:      1600px;    // content is capped here, then centred

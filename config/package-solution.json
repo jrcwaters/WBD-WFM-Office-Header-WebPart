@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "office-hero-client-side-solution",
+    "id": "7ddfd3db-ddb0-431c-9e5c-c0011e20120e",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.23.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "Full-bleed hero banner for individual office information pages."
+      },
+      "longDescription": {
+        "default": "Office Hero renders an office photograph behind a charcoal scrim with the office name, an optional facilities notice, a quick-links grid sourced from a SharePoint list, and a key-contacts banner."
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "Office Hero - Deployment of web part",
+        "description": "The feature that activates the Office Hero web part.",
+        "id": "f7b8d55f-2897-4188-b175-331b469c39ff",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/office-hero.sppkg"
+  }
+}
