@@ -50,14 +50,14 @@ function PersonGlyph(): JSX.Element {
   );
 }
 
-/** Office facts row — full size, or condensed to sit beneath the notice. */
+/** Office facts — a vertical list in the "Today" column, or a condensed strip beneath the notice. */
 function FactList(props: { facts: IOfficeFact[]; condensed?: boolean }): JSX.Element {
   const { facts, condensed } = props;
   if (facts.length === 0) {
     return <React.Fragment />;
   }
   return (
-    <div className={condensed ? styles.factsCondensed : styles.facts}>
+    <div className={condensed ? styles.factsCondensed : styles.factsList}>
       {facts.map((fact: IOfficeFact, i: number) => (
         <span key={i} className={styles.fact}>
           {renderIcon(fact.iconName, styles.factIcon)}
@@ -68,7 +68,7 @@ function FactList(props: { facts: IOfficeFact[]; condensed?: boolean }): JSX.Ele
   );
 }
 
-/** Quick-link tiles — 4-across grid (everyday) or a vertical stack (notice present). */
+/** Quick-link tiles — stacked in the right column (default), or 4-across when they stand alone. */
 function QuickLinkTiles(props: { links: IQuickLink[]; stacked: boolean }): JSX.Element {
   const { links, stacked } = props;
   return (
@@ -177,11 +177,15 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
   const listMissing: boolean = links.loaded && linkList === undefined;
   // Missing list is only surfaced to page editors; readers see nothing.
   const showQuickColumn: boolean = hasLinks || (listMissing && isEditMode);
+  // The "Today at this office" (left) column has content whenever there is a
+  // notice or any facts. Quick links are always pinned to the right column.
+  const leftHasContent: boolean = hasNotice || hasFacts;
 
   const noticeCtaHref: string | undefined =
     notice && notice.ctaUrl && notice.ctaUrl.trim().length > 0 ? notice.ctaUrl : undefined;
 
-  // Quick-links block, shared by both layouts (stacked when a notice is present).
+  // Quick-links block, shared by both layouts (stacked in the right column;
+  // 4-across only when it stands alone with no "Today" content).
   const quickLinksBlock = (stacked: boolean): JSX.Element => (
     <React.Fragment>
       <h2 className={styles.sectionLabel}>Quick links</h2>
@@ -212,46 +216,40 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
               <h1 className={styles.officeName}>{officeName}</h1>
               {metaLine ? <p className={styles.meta}>{metaLine}</p> : null}
 
-              {hasNotice && notice ? (
-                // Notice present: two columns (Today at this office | Quick links).
+              {leftHasContent ? (
+                // Two columns: "Today at this office" on the left, quick links on the right.
                 <div className={styles.columns}>
                   <div className={`${styles.colLeft} ${showQuickColumn ? '' : styles.fullWidth}`}>
                     <h2 className={styles.sectionLabel}>Today at this office</h2>
-                    <div className={styles.notice}>
-                      <div className={styles.noticeBody}>
-                        <p className={styles.noticeLabel}>{notice.label}</p>
-                        <p className={styles.noticeTitle}>{notice.title}</p>
-                        {notice.detail ? <p className={styles.noticeDetail}>{notice.detail}</p> : null}
+                    {hasNotice && notice ? (
+                      <div className={styles.notice}>
+                        <div className={styles.noticeBody}>
+                          <p className={styles.noticeLabel}>{notice.label}</p>
+                          <p className={styles.noticeTitle}>{notice.title}</p>
+                          {notice.detail ? <p className={styles.noticeDetail}>{notice.detail}</p> : null}
+                        </div>
+                        {noticeCtaHref ? (
+                          <a
+                            className={styles.noticeCta}
+                            href={noticeCtaHref}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {notice.ctaText || 'Details'}
+                          </a>
+                        ) : null}
                       </div>
-                      {noticeCtaHref ? (
-                        <a
-                          className={styles.noticeCta}
-                          href={noticeCtaHref}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {notice.ctaText || 'Details'}
-                        </a>
-                      ) : null}
-                    </div>
-                    {hasFacts ? <FactList facts={facts} condensed={true} /> : null}
+                    ) : null}
+                    {hasFacts ? <FactList facts={facts} condensed={hasNotice} /> : null}
                   </div>
 
                   {showQuickColumn ? (
                     <div className={styles.colRight}>{quickLinksBlock(true)}</div>
                   ) : null}
                 </div>
-              ) : hasFacts || showQuickColumn ? (
-                // No notice: stacked full-width bands (facts above, quick links below).
-                <div className={styles.bands}>
-                  {hasFacts ? (
-                    <div>
-                      <h2 className={styles.sectionLabel}>Today at this office</h2>
-                      <FactList facts={facts} />
-                    </div>
-                  ) : null}
-                  {showQuickColumn ? <div>{quickLinksBlock(false)}</div> : null}
-                </div>
+              ) : showQuickColumn ? (
+                // No notice and no facts: quick links stand alone across the width.
+                <div className={styles.soloQuick}>{quickLinksBlock(false)}</div>
               ) : null}
             </div>
           </div>

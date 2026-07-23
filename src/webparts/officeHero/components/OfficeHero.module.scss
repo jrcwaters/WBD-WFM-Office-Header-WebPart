@@ -123,12 +123,9 @@
   margin-top: 22px;
 }
 
-// Full-width stacked bands, used in the everyday (no-notice) state: office facts
-// above, quick links below.
-.bands {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+// Wrapper for the degenerate case only: quick links shown on their own, when
+// there is neither a notice nor any facts to occupy the "Today" column.
+.soloQuick {
   margin-top: 22px;
 }
 
@@ -158,12 +155,13 @@
 }
 
 // --- Office facts ("nearest station", "step-free access", weather, ...) -------
-// Full size in the everyday state; condensed beneath the notice when one shows.
-// Fact icons are muted, never gold.
-.facts {
+// A tidy vertical list in the "Today" column (everyday state); condensed to a
+// horizontal strip beneath the notice when one shows. Fact icons are muted,
+// never gold.
+.factsList {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
+  flex-direction: column;
+  gap: 9px;
 }
 
 .fact {
