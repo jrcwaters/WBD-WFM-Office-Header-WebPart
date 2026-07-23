@@ -26,6 +26,7 @@
       "postRoomHours": "",
       "backgroundImage": "",
       "imageAltText": "",
+      "facts": [],
       "showNotice": false,
       "noticeLabel": "Facilities notice",
       "noticeTitle": "",
@@ -33,12 +34,16 @@
       "noticeCtaText": "Details",
       "noticeCtaUrl": "",
       "contact1RoleLabel": "Head of office",
+      "contact1Person": [],
       "contact1JobTitle": "",
       "contact2RoleLabel": "Facilities manager",
+      "contact2Person": [],
       "contact2JobTitle": "",
       "contact3RoleLabel": "Reception supervisor",
+      "contact3Person": [],
       "contact3JobTitle": "",
       "contact4RoleLabel": "Post room supervisor",
+      "contact4Person": [],
       "contact4JobTitle": ""
     }
   }]
