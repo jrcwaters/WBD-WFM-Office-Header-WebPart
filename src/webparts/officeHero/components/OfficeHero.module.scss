@@ -111,13 +111,24 @@
   color: $text-meta;
 }
 
-// --- Two-column row (notice | quick links) -----------------------------------
+// --- "Today at this office" + quick links --------------------------------------
 
+// Two-column row, used when a facilities notice is present. The generous gap
+// keeps the quick-links column clear of the notice card.
 .columns {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 28px;
   align-items: flex-start;
+  margin-top: 22px;
+}
+
+// Full-width stacked bands, used in the everyday (no-notice) state: office facts
+// above, quick links below.
+.bands {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   margin-top: 22px;
 }
 
@@ -144,6 +155,49 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: $text-muted;
+}
+
+// --- Office facts ("nearest station", "step-free access", weather, ...) -------
+// Full size in the everyday state; condensed beneath the notice when one shows.
+// Fact icons are muted, never gold.
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $text-meta;
+}
+
+.factIcon {
+  flex: none;
+  display: inline-flex;
+  font-size: 16px;
+  color: $text-muted;
+}
+
+.factsCondensed {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 0.5px solid rgba(241, 239, 232, 0.14);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+
+  .fact {
+    font-size: 11.5px;
+    color: $text-muted;
+    gap: 6px;
+  }
+
+  .factIcon {
+    font-size: 13px;
+  }
 }
 
 // --- Facilities notice card --------------------------------------------------
@@ -207,16 +261,20 @@
 
 // --- Quick links grid --------------------------------------------------------
 
+// Everyday state: a single row of four across the full content width, aligning
+// with the four contacts columns below.
 .quickGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
-// When there is no facilities notice, quick links become a single row of four
-// across the full content width, aligning with the four contacts columns below.
-.fourAcross {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+// Notice state: quick links live in the narrow right-hand column, so they stack
+// vertically as full-width tiles — every label stays readable, no truncation.
+.quickStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .tile {

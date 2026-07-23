@@ -7,10 +7,11 @@ import type {
   IOfficeHeroProps,
   IContact,
   IQuickLink,
+  IOfficeFact,
   QuickLinksResult
 } from './IOfficeHeroProps';
 
-const META_SEPARATOR: string = ' · '; // &nbsp;·&nbsp;
+const META_SEPARATOR: string = ' · '; // &nbsp;·&nbsp;
 
 interface IQuickLinksState {
   loaded: boolean;
@@ -25,6 +26,18 @@ function buildMetaLine(segments: Array<string | undefined>): string {
     .join(META_SEPARATOR);
 }
 
+/**
+ * Renders a Fluent icon only when the name is a registered icon; otherwise
+ * nothing (so unknown/blank names never show a broken glyph). Icons are muted
+ * or theme-neutral — never gold.
+ */
+function renderIcon(iconName: string | undefined, className: string): JSX.Element {
+  if (!iconName || getIcon(iconName) === undefined) {
+    return <React.Fragment />;
+  }
+  return <Icon iconName={iconName} className={className} aria-hidden={true} />;
+}
+
 /** A neutral person glyph used when a contact has no usable photo. */
 function PersonGlyph(): JSX.Element {
   return (
@@ -37,15 +50,37 @@ function PersonGlyph(): JSX.Element {
   );
 }
 
-/** Renders a Fluent icon only when the name is a registered icon; otherwise nothing. */
-function QuickLinkIcon(props: { iconName?: string }): JSX.Element {
-  const { iconName } = props;
-  // Validate against the registered Fluent icon set so an unknown or blank name
-  // renders no icon (label sits flush left) rather than a broken glyph.
-  if (!iconName || getIcon(iconName) === undefined) {
+/** Office facts row — full size, or condensed to sit beneath the notice. */
+function FactList(props: { facts: IOfficeFact[]; condensed?: boolean }): JSX.Element {
+  const { facts, condensed } = props;
+  if (facts.length === 0) {
     return <React.Fragment />;
   }
-  return <Icon iconName={iconName} className={styles.tileIcon} aria-hidden={true} />;
+  return (
+    <div className={condensed ? styles.factsCondensed : styles.facts}>
+      {facts.map((fact: IOfficeFact, i: number) => (
+        <span key={i} className={styles.fact}>
+          {renderIcon(fact.iconName, styles.factIcon)}
+          <span>{fact.text}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Quick-link tiles — 4-across grid (everyday) or a vertical stack (notice present). */
+function QuickLinkTiles(props: { links: IQuickLink[]; stacked: boolean }): JSX.Element {
+  const { links, stacked } = props;
+  return (
+    <div className={stacked ? styles.quickStack : styles.quickGrid}>
+      {links.map((link: IQuickLink, i: number) => (
+        <a key={i} className={styles.tile} href={link.url} target="_blank" rel="noreferrer">
+          {renderIcon(link.iconName, styles.tileIcon)}
+          <span className={styles.tileLabel}>{link.title}</span>
+        </a>
+      ))}
+    </div>
+  );
 }
 
 /** One contacts column. Owns its own photo-error state so a 404 falls back cleanly. */
@@ -98,6 +133,7 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
     postRoomHours,
     backgroundImageUrl,
     imageAltText,
+    facts,
     showNotice,
     notice,
     contacts,
@@ -135,18 +171,30 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
 
   // --- Layout decisions ------------------------------------------------------
   const hasNotice: boolean = showNotice && !!notice;
+  const hasFacts: boolean = facts.length > 0;
   const linkList: IQuickLink[] | undefined = links.value;
   const hasLinks: boolean = Array.isArray(linkList) && linkList.length > 0;
   const listMissing: boolean = links.loaded && linkList === undefined;
   // Missing list is only surfaced to page editors; readers see nothing.
   const showQuickColumn: boolean = hasLinks || (listMissing && isEditMode);
-  // When one column is absent, the other spans the full content width.
-  const leftFull: boolean = hasNotice && !showQuickColumn;
-  const rightFull: boolean = showQuickColumn && !hasNotice;
-  const showColumns: boolean = hasNotice || showQuickColumn;
 
   const noticeCtaHref: string | undefined =
     notice && notice.ctaUrl && notice.ctaUrl.trim().length > 0 ? notice.ctaUrl : undefined;
+
+  // Quick-links block, shared by both layouts (stacked when a notice is present).
+  const quickLinksBlock = (stacked: boolean): JSX.Element => (
+    <React.Fragment>
+      <h2 className={styles.sectionLabel}>Quick links</h2>
+      {hasLinks && linkList ? (
+        <QuickLinkTiles links={linkList} stacked={stacked} />
+      ) : (
+        <p className={styles.editorHint}>
+          The &ldquo;Office Quick Links&rdquo; list was not found on this site. Provision it
+          (see the solution README) to show quick links here. Only page editors see this message.
+        </p>
+      )}
+    </React.Fragment>
+  );
 
   return (
     <section className={styles.officeHero}>
@@ -164,62 +212,45 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
               <h1 className={styles.officeName}>{officeName}</h1>
               {metaLine ? <p className={styles.meta}>{metaLine}</p> : null}
 
-              {showColumns ? (
+              {hasNotice && notice ? (
+                // Notice present: two columns (Today at this office | Quick links).
                 <div className={styles.columns}>
-                  {/* Left: facilities notice */}
-                  {hasNotice && notice ? (
-                    <div className={`${styles.colLeft} ${leftFull ? styles.fullWidth : ''}`}>
-                      <h2 className={styles.sectionLabel}>Today at this office</h2>
-                      <div className={styles.notice}>
-                        <div className={styles.noticeBody}>
-                          <p className={styles.noticeLabel}>{notice.label}</p>
-                          <p className={styles.noticeTitle}>{notice.title}</p>
-                          {notice.detail ? (
-                            <p className={styles.noticeDetail}>{notice.detail}</p>
-                          ) : null}
-                        </div>
-                        {noticeCtaHref ? (
-                          <a
-                            className={styles.noticeCta}
-                            href={noticeCtaHref}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {notice.ctaText || 'Details'}
-                          </a>
-                        ) : null}
+                  <div className={`${styles.colLeft} ${showQuickColumn ? '' : styles.fullWidth}`}>
+                    <h2 className={styles.sectionLabel}>Today at this office</h2>
+                    <div className={styles.notice}>
+                      <div className={styles.noticeBody}>
+                        <p className={styles.noticeLabel}>{notice.label}</p>
+                        <p className={styles.noticeTitle}>{notice.title}</p>
+                        {notice.detail ? <p className={styles.noticeDetail}>{notice.detail}</p> : null}
                       </div>
+                      {noticeCtaHref ? (
+                        <a
+                          className={styles.noticeCta}
+                          href={noticeCtaHref}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {notice.ctaText || 'Details'}
+                        </a>
+                      ) : null}
                     </div>
-                  ) : null}
+                    {hasFacts ? <FactList facts={facts} condensed={true} /> : null}
+                  </div>
 
-                  {/* Right: quick links */}
                   {showQuickColumn ? (
-                    <div className={`${styles.colRight} ${rightFull ? styles.fullWidth : ''}`}>
-                      <h2 className={styles.sectionLabel}>Quick links</h2>
-                      {hasLinks && linkList ? (
-                        <div className={`${styles.quickGrid} ${rightFull ? styles.fourAcross : ''}`}>
-                          {linkList.map((link: IQuickLink, i: number) => (
-                            <a
-                              key={i}
-                              className={styles.tile}
-                              href={link.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <QuickLinkIcon iconName={link.iconName} />
-                              <span className={styles.tileLabel}>{link.title}</span>
-                            </a>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className={styles.editorHint}>
-                          The &ldquo;Office Quick Links&rdquo; list was not found on this site.
-                          Provision it (see the solution README) to show quick links here. Only
-                          page editors see this message.
-                        </p>
-                      )}
+                    <div className={styles.colRight}>{quickLinksBlock(true)}</div>
+                  ) : null}
+                </div>
+              ) : hasFacts || showQuickColumn ? (
+                // No notice: stacked full-width bands (facts above, quick links below).
+                <div className={styles.bands}>
+                  {hasFacts ? (
+                    <div>
+                      <h2 className={styles.sectionLabel}>Today at this office</h2>
+                      <FactList facts={facts} />
                     </div>
                   ) : null}
+                  {showQuickColumn ? <div>{quickLinksBlock(false)}</div> : null}
                 </div>
               ) : null}
             </div>

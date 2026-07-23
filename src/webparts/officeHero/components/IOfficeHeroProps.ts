@@ -30,6 +30,16 @@ export interface IFacilitiesNotice {
 }
 
 /**
+ * An "office fact" chip in the "Today at this office" area (nearest station,
+ * step-free access, café hours, weather, ...). Icon is optional and validated;
+ * an unknown/blank name renders no icon.
+ */
+export interface IOfficeFact {
+  iconName?: string;
+  text: string;
+}
+
+/**
  * Result of the quick-links query:
  *   IQuickLink[] – zero or more links (empty array = list exists but is empty)
  *   undefined    – the list is missing or the query failed
@@ -44,6 +54,13 @@ export interface IOfficeHeroProps {
   postRoomHours?: string;
   backgroundImageUrl?: string;
   imageAltText?: string;
+
+  // --- Today at this office -----------------------------------------------
+  /**
+   * Everyday facts shown in the "Today at this office" area. Rendered full-size
+   * when there is no notice, and condensed beneath the notice when there is one.
+   */
+  facts: IOfficeFact[];
 
   // --- Facilities notice --------------------------------------------------
   showNotice: boolean;

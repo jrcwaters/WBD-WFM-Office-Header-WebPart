@@ -66,6 +66,13 @@ export default class OfficeHeroWebPart extends BaseClientSideWebPart<IOfficeHero
       backgroundImageUrl: undefined,
       imageAltText: undefined,
 
+      facts: [
+        { iconName: 'Train', text: 'Blackfriars · 5 min' },
+        { iconName: 'PartlyCloudyDay', text: '14° · Light cloud' },
+        { iconName: 'Wheelchair', text: 'Step-free access' },
+        { iconName: 'Coffee', text: 'Café until 16:00' }
+      ],
+
       showNotice: true,
       notice: {
         label: 'Facilities notice',
