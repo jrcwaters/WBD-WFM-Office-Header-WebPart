@@ -130,12 +130,14 @@
 }
 
 .colLeft {
-  flex: 1 1 330px;
+  flex: 1 1 320px;
   min-width: 0;
 }
 
+// Quick links live here. It grows so the two-per-row grid stays wide enough for
+// full, untruncated labels.
 .colRight {
-  flex: 0 1 250px;
+  flex: 1 1 300px;
   min-width: 0;
 }
 
@@ -259,19 +261,19 @@
 
 // --- Quick links grid --------------------------------------------------------
 
-// Everyday state: a single row of four across the full content width, aligning
-// with the four contacts columns below.
-.quickGrid {
+// Default: two tiles per row in the right-hand column. The column is wide
+// enough (see .colRight) that both labels stay readable.
+.quickPair {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
-// Notice state: quick links live in the narrow right-hand column, so they stack
-// vertically as full-width tiles — every label stays readable, no truncation.
-.quickStack {
-  display: flex;
-  flex-direction: column;
+// Degenerate case only (no notice and no facts): quick links stand alone across
+// the full content width, four across, aligning with the four contacts columns.
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 

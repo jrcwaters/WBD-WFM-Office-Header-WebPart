@@ -68,11 +68,11 @@ function FactList(props: { facts: IOfficeFact[]; condensed?: boolean }): JSX.Ele
   );
 }
 
-/** Quick-link tiles — stacked in the right column (default), or 4-across when they stand alone. */
-function QuickLinkTiles(props: { links: IQuickLink[]; stacked: boolean }): JSX.Element {
-  const { links, stacked } = props;
+/** Quick-link tiles — two-per-row in the right column (default), or 4-across when they stand alone. */
+function QuickLinkTiles(props: { links: IQuickLink[]; paired: boolean }): JSX.Element {
+  const { links, paired } = props;
   return (
-    <div className={stacked ? styles.quickStack : styles.quickGrid}>
+    <div className={paired ? styles.quickPair : styles.quickGrid}>
       {links.map((link: IQuickLink, i: number) => (
         <a key={i} className={styles.tile} href={link.url} target="_blank" rel="noreferrer">
           {renderIcon(link.iconName, styles.tileIcon)}
@@ -184,13 +184,13 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
   const noticeCtaHref: string | undefined =
     notice && notice.ctaUrl && notice.ctaUrl.trim().length > 0 ? notice.ctaUrl : undefined;
 
-  // Quick-links block, shared by both layouts (stacked in the right column;
+  // Quick-links block, shared by both layouts (two-per-row in the right column;
   // 4-across only when it stands alone with no "Today" content).
-  const quickLinksBlock = (stacked: boolean): JSX.Element => (
+  const quickLinksBlock = (paired: boolean): JSX.Element => (
     <React.Fragment>
       <h2 className={styles.sectionLabel}>Quick links</h2>
       {hasLinks && linkList ? (
-        <QuickLinkTiles links={linkList} stacked={stacked} />
+        <QuickLinkTiles links={linkList} paired={paired} />
       ) : (
         <p className={styles.editorHint}>
           The &ldquo;Office Quick Links&rdquo; list was not found on this site. Provision it
