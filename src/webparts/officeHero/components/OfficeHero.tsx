@@ -257,9 +257,11 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
           {/* ---- Contacts banner ---- */}
           <div className={styles.contacts}>
             <h2 className={styles.visuallyHidden}>Key contacts</h2>
-            {contacts.map((contact: IContact, i: number) => (
-              <ContactColumn key={i} contact={contact} />
-            ))}
+            <div className={styles.contactsGrid}>
+              {contacts.map((contact: IContact, i: number) => (
+                <ContactColumn key={i} contact={contact} />
+              ))}
+            </div>
           </div>
         </div>
       </div>

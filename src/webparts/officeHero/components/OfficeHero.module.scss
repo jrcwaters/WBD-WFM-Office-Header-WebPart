@@ -321,10 +321,15 @@
 // =============================================================================
 
 .contacts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 14px 0;
   background: $contacts-bg;
+}
+
+// The grid is a separate element so the visually-hidden "Key contacts" heading
+// is not a grid item (keeps nth-child clean for the responsive divider changes).
+.contactsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .contactCol {
@@ -421,6 +426,99 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+// =============================================================================
+//  Responsive — VIEWPORT media queries, desktop-first (max-width cascade).
+//
+//  Choice: CSS container queries would be the ideal fit here (the web part can
+//  sit in a narrower section, so reacting to the part's own width beats the
+//  viewport). They were tried first, but the SPFx 1.23 CSS-module build mangles
+//  @container rules — it drops the inner selectors and leaks the declarations
+//  out unscoped. So we use viewport media queries, which the pipeline compiles
+//  correctly. The brief explicitly permits this trade-off.
+// =============================================================================
+
+// 1024–1279px: "Today" and quick links stack vertically; quick links go 4-across.
+@media (max-width: 1279px) {
+  .columns {
+    flex-direction: column;
+  }
+
+  .colLeft,
+  .colRight {
+    flex: 1 1 100%;
+  }
+
+  .quickPair {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+// 768–1023px: contacts banner becomes 2×2; the office name drops to 32px.
+@media (max-width: 1023px) {
+  .officeName {
+    font-size: 32px;
+  }
+
+  .contactsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+
+  // Re-draw the dividers for a 2×2: a left hairline on the right-hand column,
+  // a top hairline on the second row.
+  .contactCol + .contactCol {
+    border-left: 0;
+  }
+
+  .contactCol:nth-child(2n) {
+    border-left: 0.5px solid $contacts-divider;
+  }
+
+  .contactCol:nth-child(n + 3) {
+    border-top: 0.5px solid $contacts-divider;
+    padding-top: 16px;
+  }
+}
+
+// <768px: everything single column; quick links one-per-row; the contacts banner
+// stacks with a top divider replacing the left one; and the scrim flips to a
+// vertical gradient because there is no horizontal room to protect a text column.
+@media (max-width: 767px) {
+  .quickPair {
+    grid-template-columns: 1fr;
+  }
+
+  .contactsGrid {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+  }
+
+  .contactCol {
+    padding: 12px 16px;
+  }
+
+  .contactCol:nth-child(2n) {
+    border-left: 0;
+  }
+
+  .contactCol:nth-child(n + 3) {
+    padding-top: 12px;
+  }
+
+  .contactCol + .contactCol {
+    border-top: 0.5px solid $contacts-divider;
+  }
+
+  .scrim {
+    background: linear-gradient(
+      180deg,
+      rgba(38, 38, 36, 0.30) 0%,
+      rgba(38, 38, 36, 0.94) 55%,
+      rgba(38, 38, 36, 0.97) 100%
+    );
+  }
 }
 
 // prefers-reduced-motion: v1 intentionally contains no transitions, animations
