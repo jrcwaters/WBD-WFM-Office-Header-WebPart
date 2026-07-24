@@ -1,0 +1,19 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "office-hero-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/officeHero/OfficeHeroWebPart.js",
+          "manifest": "./src/webparts/officeHero/OfficeHeroWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "OfficeHeroWebPartStrings": "lib/webparts/officeHero/loc/{locale}.js",
+    "PropertyControlStrings": "node_modules/@pnp/spfx-property-controls/lib/loc/{locale}.js"
+  }
+}

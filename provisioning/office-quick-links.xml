@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PnP provisioning template for the "Office Quick Links" list that the Office
+  Hero web part reads from.
+
+  Apply with PnP PowerShell:
+      Connect-PnPOnline -Url https://contoso.sharepoint.com/sites/your-office -Interactive
+      Invoke-PnPSiteTemplate -Path .\office-quick-links.xml
+
+  The list is created with the exact internal column names the web part queries
+  (Title, LinkUrl, IconName, SortOrder) and four sample items. Edit the sample
+  URLs to point at your own destinations after provisioning.
+-->
+<pnp:Provisioning xmlns:pnp="http://schemas.dev.office.com/PnP/2022/09/ProvisioningSchema">
+  <pnp:Preferences Generator="Office Hero web part" />
+  <pnp:Templates ID="office-hero-container">
+    <pnp:ProvisioningTemplate ID="office-quick-links" Version="1" BaseSiteTemplate="STS#3">
+      <pnp:Lists>
+        <pnp:ListInstance Title="Office Quick Links"
+                          Description="Quick links shown in the Office Hero web part. Ordered by the Order column; the web part shows the first four."
+                          DocumentTemplate=""
+                          TemplateType="100"
+                          Url="Lists/OfficeQuickLinks"
+                          EnableVersioning="true"
+                          Hidden="false"
+                          OnQuickLaunch="false">
+          <pnp:Fields>
+            <Field ID="{48BADFDA-AE8A-464F-928E-386CC43CA250}"
+                   Type="URL"
+                   Name="LinkUrl"
+                   DisplayName="Url"
+                   Format="Hyperlink"
+                   Required="TRUE"
+                   Group="Office Hero" />
+            <Field ID="{2D123F9B-DD23-4F33-841D-14711EA32228}"
+                   Type="Text"
+                   Name="IconName"
+                   DisplayName="Icon"
+                   MaxLength="255"
+                   Required="FALSE"
+                   Description="A Fluent UI icon name, e.g. Warning, Running, Health, Mail. Leave blank for no icon."
+                   Group="Office Hero" />
+            <Field ID="{0CCEDD32-3870-497B-9696-C267C825DA0D}"
+                   Type="Number"
+                   Name="SortOrder"
+                   DisplayName="Order"
+                   Decimals="0"
+                   Required="FALSE"
+                   Group="Office Hero" />
+          </pnp:Fields>
+          <pnp:Views>
+            <View BaseViewID="1" Type="HTML" DisplayName="All Items" Url="Lists/OfficeQuickLinks/AllItems.aspx" DefaultView="TRUE">
+              <ViewFields>
+                <FieldRef Name="SortOrder" />
+                <FieldRef Name="Title" />
+                <FieldRef Name="LinkUrl" />
+                <FieldRef Name="IconName" />
+              </ViewFields>
+              <Query>
+                <OrderBy>
+                  <FieldRef Name="SortOrder" Ascending="TRUE" />
+                </OrderBy>
+              </Query>
+            </View>
+          </pnp:Views>
+          <pnp:DataRows>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Report a fault</pnp:DataValue>
+              <pnp:DataValue FieldName="LinkUrl">https://contoso.sharepoint.com/sites/facilities/SitePages/report-a-fault.aspx, Report a fault</pnp:DataValue>
+              <pnp:DataValue FieldName="IconName">Warning</pnp:DataValue>
+              <pnp:DataValue FieldName="SortOrder">1</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Fire &amp; evacuation</pnp:DataValue>
+              <pnp:DataValue FieldName="LinkUrl">https://contoso.sharepoint.com/sites/facilities/SitePages/fire-evacuation.aspx, Fire and evacuation</pnp:DataValue>
+              <pnp:DataValue FieldName="IconName">Running</pnp:DataValue>
+              <pnp:DataValue FieldName="SortOrder">2</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">First aid &amp; wellbeing</pnp:DataValue>
+              <pnp:DataValue FieldName="LinkUrl">https://contoso.sharepoint.com/sites/facilities/SitePages/first-aid.aspx, First aid and wellbeing</pnp:DataValue>
+              <pnp:DataValue FieldName="IconName">Health</pnp:DataValue>
+              <pnp:DataValue FieldName="SortOrder">3</pnp:DataValue>
+            </pnp:DataRow>
+            <pnp:DataRow>
+              <pnp:DataValue FieldName="Title">Contact facilities</pnp:DataValue>
+              <pnp:DataValue FieldName="LinkUrl">mailto:facilities@contoso.com, Contact facilities</pnp:DataValue>
+              <pnp:DataValue FieldName="IconName">Mail</pnp:DataValue>
+              <pnp:DataValue FieldName="SortOrder">4</pnp:DataValue>
+            </pnp:DataRow>
+          </pnp:DataRows>
+        </pnp:ListInstance>
+      </pnp:Lists>
+    </pnp:ProvisioningTemplate>
+  </pnp:Templates>
+</pnp:Provisioning>
