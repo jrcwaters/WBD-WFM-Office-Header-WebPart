@@ -1,7 +1,11 @@
 /**
- * View-model for the Office Hero component. The web part maps property-pane
- * values and the quick-links list query onto these shapes; the component itself
- * stays presentational (plus the one on-mount quick-links fetch it owns).
+ * View-model for the Office Hero component.
+ *
+ * Data is now list-driven: the web part passes the selected office key and a
+ * loader; the component fetches on mount and renders the resolved `IOfficeData`.
+ * The individual shapes (`IContact`, `IOfficeFact`, `IFacilitiesNotice`,
+ * `IQuickLink`) are unchanged — only how they are populated moved from the
+ * property pane to SharePoint lists.
  */
 
 export interface IQuickLink {
@@ -40,14 +44,14 @@ export interface IOfficeFact {
 }
 
 /**
- * Result of the quick-links query:
+ * Resolved quick-links result:
  *   IQuickLink[] – zero or more links (empty array = list exists but is empty)
  *   undefined    – the list is missing or the query failed
  */
 export type QuickLinksResult = IQuickLink[] | undefined;
 
-export interface IOfficeHeroProps {
-  // --- Office -------------------------------------------------------------
+/** Everything the hero renders for one office, resolved from the lists. */
+export interface IOfficeData {
   officeName: string;
   addressLine?: string;
   openingHours?: string;
@@ -55,23 +59,25 @@ export interface IOfficeHeroProps {
   backgroundImageUrl?: string;
   imageAltText?: string;
 
-  // --- Today at this office -----------------------------------------------
-  /**
-   * Everyday facts shown in the "Today at this office" area. Rendered full-size
-   * when there is no notice, and condensed beneath the notice when there is one.
-   */
   facts: IOfficeFact[];
 
-  // --- Facilities notice --------------------------------------------------
   showNotice: boolean;
   notice?: IFacilitiesNotice;
 
-  // --- Key contacts (always four slots) -----------------------------------
+  /** Always four slots; a slot with no person renders as "Currently vacant". */
   contacts: IContact[];
 
-  // --- Quick links --------------------------------------------------------
-  /** True when the page is in edit mode (page editors see the "list missing" hint). */
+  quickLinks: QuickLinksResult;
+}
+
+/** Result of loading an office: its data, or the sentinel that it wasn't found. */
+export type OfficeLoadResult = IOfficeData | 'notFound';
+
+export interface IOfficeHeroProps {
+  /** The selected office key (Office Information Title). Undefined => not configured. */
+  officeKey?: string;
+  /** True in page edit mode (page editors see the "configure / not found" hints). */
   isEditMode: boolean;
-  /** Fetched once on mount and cached in component state. */
-  getQuickLinks: () => Promise<QuickLinksResult>;
+  /** Loads everything for the office, once, on mount. Resolves to data or 'notFound'. */
+  loadData: (officeKey: string) => Promise<OfficeLoadResult>;
 }

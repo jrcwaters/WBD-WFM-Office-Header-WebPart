@@ -5,17 +5,18 @@ import { getIcon } from '@fluentui/react/lib/Styling';
 import styles from './OfficeHero.module.scss';
 import type {
   IOfficeHeroProps,
+  IOfficeData,
   IContact,
   IQuickLink,
   IOfficeFact,
-  QuickLinksResult
+  OfficeLoadResult
 } from './IOfficeHeroProps';
 
 const META_SEPARATOR: string = ' · '; // &nbsp;·&nbsp;
 
-interface IQuickLinksState {
-  loaded: boolean;
-  value: QuickLinksResult;
+interface ILoadState {
+  status: 'loading' | 'ready' | 'notFound';
+  data?: IOfficeData;
 }
 
 /** Joins only the non-empty meta segments so a stranded separator never renders. */
@@ -125,7 +126,49 @@ function ContactColumn(props: { contact: IContact }): JSX.Element {
   );
 }
 
-export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
+/** Static charcoal placeholder while the office data loads (no motion, no layout jump). */
+function HeroSkeleton(): JSX.Element {
+  return (
+    <section className={styles.officeHero} aria-hidden="true">
+      <div className={styles.inner}>
+        <div className={styles.card}>
+          <div className={styles.hero}>
+            <div className={styles.scrim} />
+          </div>
+          <div className={styles.contacts}>
+            <div className={styles.contactsGrid} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Editor-only message when no office is selected or the office row can't be found. */
+function ConfigMessage(props: { officeKey?: string }): JSX.Element {
+  const message: string = props.officeKey
+    ? `The office “${props.officeKey}” was not found in the Office Information list on this site.`
+    : 'Select an office in the property pane to configure this hero. Only page editors see this message.';
+  return (
+    <section className={styles.officeHero}>
+      <div className={styles.inner}>
+        <div className={styles.card}>
+          <div className={styles.hero}>
+            <div className={styles.scrim} />
+            <div className={styles.heroInner}>
+              <p className={styles.eyebrow}>Our offices</p>
+              <p className={styles.editorHint}>{message}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** The hero itself, rendered from resolved office data. */
+function HeroView(props: { data: IOfficeData; isEditMode: boolean }): JSX.Element {
+  const { data, isEditMode } = props;
   const {
     officeName,
     addressLine,
@@ -137,55 +180,26 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
     showNotice,
     notice,
     contacts,
-    isEditMode,
-    getQuickLinks
-  } = props;
-
-  const [links, setLinks] = React.useState<IQuickLinksState>({ loaded: false, value: undefined });
-
-  // Fetch the quick links once, on mount, and cache the result in state.
-  React.useEffect((): (() => void) => {
-    let active: boolean = true;
-    getQuickLinks()
-      .then((result: QuickLinksResult): void => {
-        if (active) {
-          setLinks({ loaded: true, value: result });
-        }
-      })
-      .catch((): void => {
-        if (active) {
-          setLinks({ loaded: true, value: undefined });
-        }
-      });
-    return (): void => {
-      active = false;
-    };
-    // getQuickLinks is a stable per-render closure from the web part; run once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    quickLinks
+  } = data;
 
   const metaLine: string = buildMetaLine([addressLine, openingHours, postRoomHours]);
   const heroStyle: React.CSSProperties = backgroundImageUrl
     ? { backgroundImage: `url('${backgroundImageUrl}')` }
     : {};
 
-  // --- Layout decisions ------------------------------------------------------
   const hasNotice: boolean = showNotice && !!notice;
   const hasFacts: boolean = facts.length > 0;
-  const linkList: IQuickLink[] | undefined = links.value;
+  const linkList: IQuickLink[] | undefined = quickLinks;
   const hasLinks: boolean = Array.isArray(linkList) && linkList.length > 0;
-  const listMissing: boolean = links.loaded && linkList === undefined;
+  const listMissing: boolean = linkList === undefined;
   // Missing list is only surfaced to page editors; readers see nothing.
   const showQuickColumn: boolean = hasLinks || (listMissing && isEditMode);
-  // The "Today at this office" (left) column has content whenever there is a
-  // notice or any facts. Quick links are always pinned to the right column.
   const leftHasContent: boolean = hasNotice || hasFacts;
 
   const noticeCtaHref: string | undefined =
     notice && notice.ctaUrl && notice.ctaUrl.trim().length > 0 ? notice.ctaUrl : undefined;
 
-  // Quick-links block, shared by both layouts (two-per-row in the right column;
-  // 4-across only when it stands alone with no "Today" content).
   const quickLinksBlock = (paired: boolean): JSX.Element => (
     <React.Fragment>
       <h2 className={styles.sectionLabel}>Quick links</h2>
@@ -217,7 +231,6 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
               {metaLine ? <p className={styles.meta}>{metaLine}</p> : null}
 
               {leftHasContent ? (
-                // Two columns: "Today at this office" on the left, quick links on the right.
                 <div className={styles.columns}>
                   <div className={`${styles.colLeft} ${showQuickColumn ? '' : styles.fullWidth}`}>
                     <h2 className={styles.sectionLabel}>Today at this office</h2>
@@ -248,7 +261,6 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
                   ) : null}
                 </div>
               ) : showQuickColumn ? (
-                // No notice and no facts: quick links stand alone across the width.
                 <div className={styles.soloQuick}>{quickLinksBlock(false)}</div>
               ) : null}
             </div>
@@ -267,4 +279,51 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
       </div>
     </section>
   );
+}
+
+export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
+  const { officeKey, isEditMode, loadData } = props;
+  const [state, setState] = React.useState<ILoadState>({ status: 'loading' });
+
+  // Load the office (once) when the selected office changes.
+  React.useEffect((): (() => void) => {
+    let active: boolean = true;
+
+    if (!officeKey) {
+      setState({ status: 'notFound' });
+      return (): void => {
+        active = false;
+      };
+    }
+
+    setState({ status: 'loading' });
+    loadData(officeKey)
+      .then((result: OfficeLoadResult): void => {
+        if (!active) {
+          return;
+        }
+        setState(result === 'notFound' ? { status: 'notFound' } : { status: 'ready', data: result });
+      })
+      .catch((): void => {
+        if (active) {
+          setState({ status: 'notFound' });
+        }
+      });
+
+    return (): void => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [officeKey]);
+
+  if (state.status === 'loading') {
+    return <HeroSkeleton />;
+  }
+
+  if (state.status === 'notFound' || !state.data) {
+    // Page editors get a helpful message; readers see nothing.
+    return isEditMode ? <ConfigMessage officeKey={officeKey} /> : <React.Fragment />;
+  }
+
+  return <HeroView data={state.data} isEditMode={isEditMode} />;
 }
