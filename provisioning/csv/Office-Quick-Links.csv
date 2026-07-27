@@ -1,0 +1,7 @@
+Title,Url,Icon,Order,Office
+Report a fault,https://contoso.sharepoint.com/sites/facilities/report.aspx,Warning,1,London - Fleet Place
+Fire & evacuation,https://contoso.sharepoint.com/sites/facilities/fire.aspx,Running,2,London - Fleet Place
+First aid & wellbeing,https://contoso.sharepoint.com/sites/facilities/firstaid.aspx,Health,3,London - Fleet Place
+Contact facilities,mailto:facilities@contoso.com,Mail,4,London - Fleet Place
+Report a fault,https://contoso.sharepoint.com/sites/facilities/report.aspx,Warning,1,Bristol - Temple Quay
+Contact facilities,mailto:bristol.facilities@contoso.com,Mail,2,Bristol - Temple Quay
