@@ -126,7 +126,20 @@ export default class OfficeHeroWebPart extends BaseClientSideWebPart<IOfficeHero
 
   /** Loads everything the hero needs for one office. Resolves to data or 'notFound'. */
   private async _loadData(officeKey: string): Promise<OfficeLoadResult> {
-    const info: IResolvedOfficeInfo | undefined = await this._getOfficeInfo(officeKey);
+    let info: IResolvedOfficeInfo | undefined;
+    try {
+      info = await this._getOfficeInfo(officeKey);
+    } catch (error) {
+      // The list exists but its columns don't match what we query (typically a
+      // list built by "Import spreadsheet"). Tell the editor precisely rather
+      // than misreporting the office as "not found".
+      if (this._isSchemaError(error)) {
+        return 'misconfigured';
+      }
+      // eslint-disable-next-line no-console
+      console.error('[Office Hero] Office Information query failed.', error);
+      return 'notFound';
+    }
     if (!info) {
       return 'notFound';
     }
@@ -201,7 +214,12 @@ export default class OfficeHeroWebPart extends BaseClientSideWebPart<IOfficeHero
           : undefined
       };
     } catch (error) {
-      // Missing list or query failure: treat as "office not found" (editor sees a hint).
+      // A column/schema mismatch means the list exists but was built wrong (e.g.
+      // imported from a spreadsheet). Let _loadData surface a precise message.
+      if (this._isSchemaError(error)) {
+        throw error;
+      }
+      // Missing list or other failure: treat as "office not found" (editor sees a hint).
       if (!this._isListMissing(error)) {
         // eslint-disable-next-line no-console
         console.error('[Office Hero] Office Information query failed.', error);
@@ -303,10 +321,25 @@ export default class OfficeHeroWebPart extends BaseClientSideWebPart<IOfficeHero
     return person.Name || undefined;
   }
 
+  /**
+   * A 400 SharePoint raises when a selected/filtered column's *internal* name
+   * doesn't exist on the list — e.g. `AddressLine` on a list whose columns were
+   * imported from a spreadsheet (and are named `Address_x0020_line`).
+   */
+  private _isSchemaError(error: unknown): boolean {
+    const message: string = (error as { message?: string }).message || '';
+    return /field or property '[^']*' does not exist|column '[^']*' does not exist/i.test(message);
+  }
+
   private _isListMissing(error: unknown): boolean {
+    // A missing *column* is a schema problem, not a missing list — never conflate
+    // the two, or a mis-built list reads as "not found".
+    if (this._isSchemaError(error)) {
+      return false;
+    }
     const status: number | undefined = (error as { status?: number }).status;
     const message: string = (error as { message?: string }).message || '';
-    return status === 404 || /does not exist|not found/i.test(message);
+    return status === 404 || /list .*does not exist|does not exist at site/i.test(message);
   }
 
   // --- Property pane ---------------------------------------------------------

@@ -119,6 +119,12 @@ Install-Module PnP.PowerShell -Scope CurrentUser   # once
 Facts, People, and Quick Links each link back to Office Information via an
 **`Office` lookup**, so one office edit updates every page.
 
+Prefer to click through the UI? [**Manual column setup**](./provisioning/Manual-Column-Setup.md)
+lists the exact column names and types to create by hand. **Do not build these lists
+by importing a spreadsheet/CSV** — that gives the columns the wrong internal names
+and types and skips the `Office` lookup (see
+[troubleshooting](#behaviour-when-listsrows-are-missing)).
+
 ### Office Information — one row per office
 
 | Column | Internal name | Type | Notes |
@@ -169,6 +175,11 @@ vacant"**, so the grid never collapses to three.
 
 - **No office selected, or the office row isn't found** → an editor-only message
   (Edit mode); readers see nothing.
+- **The list exists but the office reads as "not found"** → its columns don't match
+  the expected internal names — almost always because the list was built by
+  importing a spreadsheet/CSV. Edit mode shows a specific "missing expected columns"
+  hint; rebuild the columns per
+  [Manual column setup](./provisioning/Manual-Column-Setup.md).
 - **Missing quick-links list** → editor-only hint; readers see the section omitted.
 - **Empty facts / people / quick links** → those sections are simply omitted (or
   vacant, for a role).

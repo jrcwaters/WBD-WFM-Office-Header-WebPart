@@ -1,5 +1,19 @@
 # Sample-data CSVs for the Office Hero lists
 
+> ## ⚠️ Do NOT create the lists by importing these CSVs
+>
+> These files are **row data only.** Do **not** feed them to SharePoint's *"Import
+> spreadsheet"* / *"Create list → From Excel"*. Doing so builds columns named after
+> the CSV *headers* (internal name `Address_x0020_line` instead of `AddressLine`),
+> makes every column plain **text**, and creates **no `Office` lookup / Person /
+> Choice** columns — so the web part can't find its data and reports the office as
+> *"not found."*
+>
+> **Create the columns first**, with the correct internal names and types:
+> [`../Manual-Column-Setup.md`](../Manual-Column-Setup.md) (by hand) or
+> [`../Provision-OfficeHero.ps1`](../Provision-OfficeHero.ps1) (PnP PowerShell).
+> **Then** use these CSVs to paste *rows* into the existing lists.
+
 These CSVs let you **bulk-populate rows** in the four Office Hero lists instead of
 typing them one at a time. They hold sample data for two offices (London and
 Bristol) — edit the URLs, people, and text to match your tenant.

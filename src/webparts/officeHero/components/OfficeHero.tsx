@@ -15,7 +15,7 @@ import type {
 const META_SEPARATOR: string = ' · '; // &nbsp;·&nbsp;
 
 interface ILoadState {
-  status: 'loading' | 'ready' | 'notFound';
+  status: 'loading' | 'ready' | 'notFound' | 'misconfigured';
   data?: IOfficeData;
 }
 
@@ -144,11 +144,19 @@ function HeroSkeleton(): JSX.Element {
   );
 }
 
-/** Editor-only message when no office is selected or the office row can't be found. */
-function ConfigMessage(props: { officeKey?: string }): JSX.Element {
-  const message: string = props.officeKey
-    ? `The office “${props.officeKey}” was not found in the Office Information list on this site.`
-    : 'Select an office in the property pane to configure this hero. Only page editors see this message.';
+/** Editor-only message when no office is selected, the row can't be found, or the list is mis-built. */
+function ConfigMessage(props: { officeKey?: string; misconfigured?: boolean }): JSX.Element {
+  let message: string;
+  if (props.misconfigured) {
+    message =
+      'The Office Information list is missing the columns this web part expects — it looks ' +
+      'like it was built by importing a spreadsheet. Recreate the columns with the exact ' +
+      'internal names (see provisioning/Manual-Column-Setup.md in the solution).';
+  } else if (props.officeKey) {
+    message = `The office “${props.officeKey}” was not found in the Office Information list on this site.`;
+  } else {
+    message = 'Select an office in the property pane to configure this hero. Only page editors see this message.';
+  }
   return (
     <section className={styles.officeHero}>
       <div className={styles.inner}>
@@ -302,7 +310,11 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
         if (!active) {
           return;
         }
-        setState(result === 'notFound' ? { status: 'notFound' } : { status: 'ready', data: result });
+        if (result === 'notFound' || result === 'misconfigured') {
+          setState({ status: result });
+        } else {
+          setState({ status: 'ready', data: result });
+        }
       })
       .catch((): void => {
         if (active) {
@@ -320,10 +332,14 @@ export default function OfficeHero(props: IOfficeHeroProps): JSX.Element {
     return <HeroSkeleton />;
   }
 
-  if (state.status === 'notFound' || !state.data) {
-    // Page editors get a helpful message; readers see nothing.
-    return isEditMode ? <ConfigMessage officeKey={officeKey} /> : <React.Fragment />;
+  if (state.status === 'ready' && state.data) {
+    return <HeroView data={state.data} isEditMode={isEditMode} />;
   }
 
-  return <HeroView data={state.data} isEditMode={isEditMode} />;
+  // 'notFound' or 'misconfigured' — page editors get a helpful message; readers see nothing.
+  return isEditMode ? (
+    <ConfigMessage officeKey={officeKey} misconfigured={state.status === 'misconfigured'} />
+  ) : (
+    <React.Fragment />
+  );
 }

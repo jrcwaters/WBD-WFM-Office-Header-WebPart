@@ -70,8 +70,14 @@ export interface IOfficeData {
   quickLinks: QuickLinksResult;
 }
 
-/** Result of loading an office: its data, or the sentinel that it wasn't found. */
-export type OfficeLoadResult = IOfficeData | 'notFound';
+/**
+ * Result of loading an office:
+ *   IOfficeData     – resolved office content
+ *   'notFound'      – no office selected, or no matching row / missing list
+ *   'misconfigured' – the list exists but is missing the expected columns
+ *                     (typically a list built via "Import spreadsheet")
+ */
+export type OfficeLoadResult = IOfficeData | 'notFound' | 'misconfigured';
 
 export interface IOfficeHeroProps {
   /** The selected office key (Office Information Title). Undefined => not configured. */
